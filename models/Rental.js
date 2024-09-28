@@ -15,7 +15,10 @@ const rentalSchema = new mongoose.Schema({
   make: { type: String, required: true },
   model: { type: String, required: true },
   pickupDate: { type: String, required: true },
-  returnDate: { type: String, required: true }
+  returnDate: { type: String, required: true },
+  type: { type: String, required: true },
+  status: { type: String, required: true },
+  returnDeposit: { type: String, required: true }
 });
 
 module.exports = mongoose.model("Rental", rentalSchema);
