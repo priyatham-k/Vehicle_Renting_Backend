@@ -7,7 +7,8 @@ const vehicleSchema = new mongoose.Schema({
   imageUrl: { type: String }, // For image of the vehicle
   dailyPrice: { type: Number, required: true },
   insurance: { type: Number, required: true },
-  mileage: { type: Number, required: true }
+  mileage: { type: Number, required: true },
+  type: { type: String, required: true}
 });
 
 module.exports = mongoose.model('Vehicle', vehicleSchema);
