@@ -89,18 +89,17 @@ exports.cancelRental = async (req, res) => {
   }
 };
 
-// Drop off a vehicle
 exports.dropOffVehicle = async (req, res) => {
   const rentalId = req.params.rentalId;
-
+  const { totalCharge } = req.body; 
   try {
     const rental = await Rental.findById(rentalId);
     if (!rental) {
       return res.status(404).json({ message: "Rental not found" });
     }
 
-
-    rental.status = "Completed"; // Update the status to Completed
+    rental.status = "Completed";
+    rental.totalPrice += totalCharge; // Add the drop-off amount to total price
     await rental.save();
 
     res.status(200).json({ message: "Vehicle drop-off completed successfully", rental });
@@ -108,4 +107,5 @@ exports.dropOffVehicle = async (req, res) => {
     res.status(500).json({ message: "Vehicle drop-off failed", error });
   }
 };
+
 

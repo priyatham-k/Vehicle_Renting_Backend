@@ -13,10 +13,10 @@ exports.getAllRentalsForOwner = async (req, res) => {
 
 // Add vehicle
 exports.addVehicle = async (req, res) => {
-  const { make, model, vinNumber, mileage, imageUrl, dailyPrice, insurance,type } = req.body;
+  const { make, model, vinNumber, mileage, imageUrl, dailyPrice, insurance,type,pricePerDay,currentOdoMeter } = req.body;
 
   try {
-    const vehicle = await Vehicle.create({ make, model, vinNumber, mileage, imageUrl, dailyPrice,insurance,type });
+    const vehicle = await Vehicle.create({ make, model, vinNumber, mileage, imageUrl, dailyPrice,insurance,type,pricePerDay,currentOdoMeter });
     res.status(201).json({ message: "Vehicle added successfully", vehicle });
   } catch (error) {
     res.status(500).json({ message: "Failed to add vehicle", error });

@@ -8,7 +8,9 @@ const vehicleSchema = new mongoose.Schema({
   dailyPrice: { type: Number, required: true },
   insurance: { type: Number, required: true },
   mileage: { type: Number, required: true },
-  type: { type: String, required: true}
+  type: { type: String, required: true},
+  pricePerDay: { type: String, required: true},
+  currentOdoMeter:{type: String, required: true}
 });
 
 module.exports = mongoose.model('Vehicle', vehicleSchema);
