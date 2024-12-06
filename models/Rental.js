@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const rentalSchema = new mongoose.Schema({
-  customerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
   vehicleId: { type: mongoose.Schema.Types.ObjectId, ref: "Vehicle" },
   rentalDuration: { type: Number, required: true },
   pickupAddress: { type: String, required: true },
@@ -18,7 +18,8 @@ const rentalSchema = new mongoose.Schema({
   returnDate: { type: String, required: true },
   type: { type: String, required: true },
   status: { type: String, required: true },
-  returnDeposit: { type: String, required: true }
+  returnDeposit: { type: String, required: true },
+  reviewAdded: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model("Rental", rentalSchema);

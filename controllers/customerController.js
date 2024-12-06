@@ -1,111 +1,100 @@
-const Vehicle = require("../models/vehicle");
-const Rental = require("../models/Rental");
+const Customer = require("../models/Customer");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-// Search for vehicles
-exports.searchVehicles = async (req, res) => {
+// Register Customer
+exports.registerCustomer = async (req, res) => {
   try {
-    const vehicles = await Vehicle.find({});
-    res.status(200).json(vehicles);
-  } catch (error) {
-    res.status(500).json({ message: "Vehicle search failed", error });
-  }
-};
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      driverLicense,
+      address1,
+      address2,
+      state,
+      zipcode,
+      password,
+    } = req.body;
 
-// Rent a vehicle
-exports.rentVehicle = async (req, res) => {
-  const {
-    make,
-    model,
-    customerId,
-    vehicleId,
-    pickupDate,
-    returnDate,
-    rentalDuration,
-    pickupAddress,
-    dropOffAddress,
-    deposit,
-    insurance,
-    totalPrice,
-    imageUrl,
-    type,
-    status,
-    returnDeposit
-  } = req.body;
-
-  try {
-    const rental = await Rental.create({
-      customerId,
-      vehicleId,
-      rentalDuration,
-      pickupAddress,
-      dropOffAddress,
-      deposit,
-      insurance,
-      totalPrice,
-      imageUrl,
-      make,
-      model,
-      pickupDate,
-      returnDate,
-      type,
-      status,returnDeposit                                                                            
+    // Check if email or driverLicense already exists
+    const existingCustomer = await Customer.findOne({
+      $or: [{ email }, { driverLicense }],
     });
-    res.status(201).json({ message: "Vehicle rented successfully", rental });
-  } catch (error) {
-    res.status(500).json({ message: "Vehicle rental failed", error });
-  }
-};
-
-// Get all rentals for a customer
-exports.getCustomerRentals = async (req, res) => {
-  const customerId = req.params.customerId;
-
-  try {
-    const rentals = await Rental.find({ customerId }).populate("vehicleId");
-    res.status(200).json(rentals);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch rentals", error });
-  }
-};
-exports.cancelRental = async (req, res) => {
-  const rentalId = req.params.rentalId;
-  console.log('Canceling rental with ID:', rentalId);
-
-  try {
-    const rental = await Rental.findById(rentalId);
-    if (!rental) {
-      console.log('Rental not found');
-      return res.status(404).json({ message: "Rental not found" });
+    if (existingCustomer) {
+      return res
+        .status(400)
+        .json({ message: "Email or Driver License already exists" });
     }
 
-    rental.status = "Cancelled";
-    await rental.save();
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    console.log('Rental canceled successfully');
-    res.status(200).json({ message: "Rental cancelled successfully", rental });
-  } catch (error) {
-    console.error('Error canceling rental:', error);
-    res.status(500).json({ message: "Rental cancellation failed", error });
+    // Create new customer
+    const customer = new Customer({
+      firstName,
+      lastName,
+      email,
+      phone,
+      driverLicense,
+      address1,
+      address2,
+      state,
+      zipcode,
+      password: hashedPassword,
+    });
+    await customer.save();
+
+    res.status(201).json({ message: "Customer registered successfully" });
+  } catch (err) {
+    console.error("Error during customer registration:", err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.dropOffVehicle = async (req, res) => {
-  const rentalId = req.params.rentalId;
-  const { totalCharge } = req.body; 
+// Login Customer
+exports.loginCustomer = async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const rental = await Rental.findById(rentalId);
-    if (!rental) {
-      return res.status(404).json({ message: "Rental not found" });
+    const customer = await Customer.findOne({ email });
+    if (!customer) {
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    rental.status = "Completed";
-    rental.totalPrice += totalCharge; // Add the drop-off amount to total price
-    await rental.save();
+    // Compare password
+    const isPasswordValid = await bcrypt.compare(password, customer.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-    res.status(200).json({ message: "Vehicle drop-off completed successfully", rental });
+    // Generate JWT
+    const token = jwt.sign(
+      {
+        id: customer._id,
+        role: "customer", // Explicitly setting the role
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    res.status(200).json({
+      message: "Customer login successful",
+      token,
+      customer: {
+        id: customer._id,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        email: customer.email,
+        phone: customer.phone,
+        driverLicense: customer.driverLicense,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: "Vehicle drop-off failed", error });
+    console.error("Error during customer login:", error);
+    res.status(500).json({ message: "Customer login failed", error });
   }
 };
-
-

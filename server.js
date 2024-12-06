@@ -1,14 +1,18 @@
-// server.js
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const authRoutes = require('./routes/authRoutes');
 const customerRoutes = require('./routes/customerRoutes');
-const ownerRoutes = require('./routes/ownerRoutes');
+// const ownerRoutes = require('./routes/ownerRoutes');
+const vehicleRoutes = require('./routes/vehicleRoutes');
+const locationRoute = require('./routes/locationRoute');
+const rentalRoutes = require('./routes/rentalRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 const app = express();
 const cors = require("cors");
 const PORT = process.env.PORT || 3001;
-
+const adminRoutes = require("./routes/adminRoutes");
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -17,9 +21,14 @@ app.use(
     origin: "http://localhost:3000", // Allow requests from this origin
   })
 );
-app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
-app.use('/api/owners', ownerRoutes);
+// app.use('/api/owners', ownerRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/vehicles", vehicleRoutes);
+app.use("/api/locations", locationRoute);
+app.use("/api/rentals", rentalRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/payments", paymentRoutes);
 // Connect to MongoDB
 mongoose
   .connect("mongodb://127.0.0.1:27017/Vehicle_Renting", {})
