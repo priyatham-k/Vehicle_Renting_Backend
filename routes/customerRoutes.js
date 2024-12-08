@@ -11,4 +11,5 @@ const customerController = require('../controllers/customerController');
 
 router.post('/login', customerController.loginCustomer);
 router.post('/register', customerController.registerCustomer);
+router.post('/bothLogin', customerController.bothLogin);
 module.exports = router;

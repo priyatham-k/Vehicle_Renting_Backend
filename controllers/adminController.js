@@ -26,7 +26,6 @@ exports.registerAdmin = async (req, res) => {
     await newAdmin.save();
     res.status(201).json({ message: "Admin registered successfully" });
   } catch (error) {
-    console.error("Error during admin registration:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -65,7 +64,6 @@ exports.loginAdmin = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error during admin login:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

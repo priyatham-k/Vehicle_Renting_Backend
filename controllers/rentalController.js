@@ -20,13 +20,24 @@ exports.rentVehicle = async (req, res) => {
     type,
     status,
     returnDeposit,
-    cardNumber, // Payment details
+    cardNumber, // Full card details (received but not stored)
     expiryDate,
     cvv,
+    currentOdoMeter,
+    fuelType,color
   } = req.body;
 
   try {
-    // Step 1: Create the rental record
+    // Step 1: Validate card details (example validation, should use a payment gateway in production)
+    if (!cardNumber || !expiryDate || !cvv) {
+      return res.status(400).json({ message: "Incomplete credit card details" });
+    }
+
+    if (cardNumber.length !== 16 || cvv.length !== 3) {
+      return res.status(400).json({ message: "Invalid credit card details" });
+    }
+
+    // Step 2: Create the rental record
     const rental = await Rental.create({
       customerId,
       vehicleId,
@@ -43,10 +54,13 @@ exports.rentVehicle = async (req, res) => {
       returnDate,
       type,
       status,
-      returnDeposit,
+      returnDeposit,currentOdoMeter,fuelType,color,
+      cardLastFour: cardNumber.slice(-4), // Store only last 4 digits
+      cardExpiry: expiryDate, // Store expiry date
+      cardType: "Credit Card", // Example card type
     });
 
-    // Step 2: Update the vehicle status to 'rented'
+    // Step 3: Update the vehicle status to 'rented'
     const vehicle = await Vehicle.findByIdAndUpdate(
       vehicleId,
       { status: "rented" },
@@ -57,13 +71,14 @@ exports.rentVehicle = async (req, res) => {
       return res.status(404).json({ message: "Vehicle not found" });
     }
 
-    // Step 3: Save payment details
+    // Step 4: Save payment details
     const payment = await Payment.create({
       payBy: customerId,
       paymentDate: new Date(),
       amount: totalPrice,
       rentalId: rental._id,
       paymentMethod: "Credit Card", // Assuming payment is via credit card
+      status: "Paid",
     });
 
     res.status(201).json({
@@ -73,7 +88,6 @@ exports.rentVehicle = async (req, res) => {
       vehicle, // Include updated vehicle details
     });
   } catch (error) {
-    console.error("Error renting vehicle:", error);
     res.status(500).json({ message: "Vehicle rental failed", error });
   }
 };
@@ -89,7 +103,6 @@ exports.getCustomerRentals = async (req, res) => {
 
     res.status(200).json(rentals);
   } catch (error) {
-    console.error("Error fetching customer rentals:", error);
     res.status(500).json({ message: "Failed to fetch rentals", error });
   }
 };
@@ -102,20 +115,17 @@ exports.getAllRentals = async (req, res) => {
 
     res.status(200).json(rentals);
   } catch (error) {
-    console.error("Error fetching all rentals:", error);
     res.status(500).json({ message: "Failed to fetch rentals", error });
   }
 };
 
 exports.cancelRental = async (req, res) => {
   const rentalId = req.params.rentalId;
-  console.log("Canceling rental with ID:", rentalId);
 
   try {
     // Find the rental record by ID
     const rental = await Rental.findById(rentalId);
     if (!rental) {
-      console.log("Rental not found");
       return res.status(404).json({ message: "Rental not found" });
     }
 
@@ -129,16 +139,13 @@ exports.cancelRental = async (req, res) => {
       vehicle.status = "available";
       await vehicle.save();
     } else {
-      console.log("Vehicle associated with rental not found");
     }
 
-    console.log("Rental canceled successfully and vehicle status updated");
     res.status(200).json({
       message: "Rental cancelled successfully and vehicle status updated",
       rental,
     });
   } catch (error) {
-    console.error("Error canceling rental:", error);
     res.status(500).json({ message: "Rental cancellation failed", error });
   }
 };
@@ -173,8 +180,29 @@ exports.dropOffVehicle = async (req, res) => {
       .status(200)
       .json({ message: "Vehicle drop-off completed successfully", rental });
   } catch (error) {
-    console.error("Error during vehicle drop-off:", error);
     res.status(500).json({ message: "Vehicle drop-off failed", error });
+  }
+};
+
+exports.getRentalDates = async (req, res) => {
+  const { vehicleId } = req.params;
+
+  try {
+    // Find all rentals for the given vehicle
+    const rentals = await Rental.find({ vehicleId }).select(
+      "pickupDate returnDate"
+    );
+
+    // Map rentals to include only pickup and return dates
+    const rentalDates = rentals.map((rental) => ({
+      pickupDate: rental.pickupDate,
+      returnDate: rental.returnDate,
+    }));
+
+    // Send the rental dates (empty array if no rentals found)
+    res.status(200).json({ rentalDates });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch rental dates", error });
   }
 };
 

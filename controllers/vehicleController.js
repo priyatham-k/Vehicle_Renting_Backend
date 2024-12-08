@@ -12,7 +12,9 @@ exports.addVehicle = async (req, res) => {
     type,
     pricePerDay,
     currentOdoMeter,
-    capacity
+    capacity,
+    fuelType,
+    color
   } = req.body;
 
   // Validation
@@ -26,9 +28,16 @@ exports.addVehicle = async (req, res) => {
     !type ||
     !pricePerDay ||
     !currentOdoMeter ||
-    !capacity
+    !capacity ||
+    !fuelType ||
+    !color
   ) {
     return res.status(400).json({ message: "All fields are required" });
+  }
+
+  // Validate `fuelType`
+  if (!['ev', 'gas'].includes(fuelType)) {
+    return res.status(400).json({ message: "Invalid fuel type. Must be 'ev' or 'gas'" });
   }
 
   try {
@@ -50,15 +59,17 @@ exports.addVehicle = async (req, res) => {
       type,
       pricePerDay,
       currentOdoMeter,
-      capacity
+      capacity,
+      fuelType,
+      color
     });
 
     res.status(201).json({ message: "Vehicle added successfully", vehicle });
   } catch (error) {
-    console.error("Error adding vehicle:", error);
     res.status(500).json({ message: "Failed to add vehicle", error });
   }
 };
+
 exports.showAllvehicles = async (req, res) => {
   try {
     const vehicles = await Vehicle.find({});
@@ -84,8 +95,6 @@ exports.deleteVehicle = async (req, res) => {
     }
     return res.status(200).json({ message: "Vehicle deleted successfully" });
   } catch (error) {
-    // Handle and log the error, then respond with a 500 status code
-    console.error("Error deleting vehicle:", error);
     return res
       .status(500)
       .json({ message: "Failed to delete vehicle", error: error.message });

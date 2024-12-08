@@ -16,5 +16,5 @@ router.put("/cancel/:rentalId", rentalController.cancelRental);
 
 // Route to drop off a vehicle and finalize rental
 router.put("/dropoff/:rentalId", rentalController.dropOffVehicle);
-
+router.get("/rentals/dates/:vehicleId", rentalController.getRentalDates);
 module.exports = router;

@@ -12,14 +12,22 @@ const rentalSchema = new mongoose.Schema({
   make: { type: String, required: true },
   model: { type: String, required: true },
   imageUrl: { type: String, required: true },
-  make: { type: String, required: true },
-  model: { type: String, required: true },
   pickupDate: { type: String, required: true },
   returnDate: { type: String, required: true },
   type: { type: String, required: true },
   status: { type: String, required: true },
   returnDeposit: { type: String, required: true },
-  reviewAdded: { type: Boolean, default: false }
+  reviewAdded: { type: Boolean, default: false },
+  cardLastFour: { type: String, required: true }, 
+  cardExpiry: { type: String, required: true }, 
+  cardType: { type: String, required: true },
+  currentOdoMeter: { type: String, required: true },
+  fuelType: { 
+    type: String, 
+    enum: ['ev', 'gas'], // Fuel types: Electric Vehicle (EV) or Gas
+    required: true 
+  },
+  color: { type: String, required: true }, // Color of the vehicle
 });
 
 module.exports = mongoose.model("Rental", rentalSchema);

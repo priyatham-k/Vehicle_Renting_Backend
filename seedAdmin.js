@@ -27,11 +27,9 @@ const seedAdmin = async () => {
       console.log("Admin user already exists. Skipping seeding.");
     } else {
       await admin.save();
-      console.log("Admin user seeded successfully.");
     }
     mongoose.disconnect(); // Disconnect after the operation
   } catch (err) {
-    console.error("Error seeding admin user:", err);
     mongoose.disconnect(); // Disconnect on error
   }
 };

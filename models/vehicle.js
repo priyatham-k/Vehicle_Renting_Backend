@@ -11,7 +11,13 @@ const vehicleSchema = new mongoose.Schema({
   type: { type: String, required: true }, // Type (e.g., Sedan, SUV, Truck)
   pricePerDay: { type: Number, required: true }, // Price per day for rental
   currentOdoMeter: { type: Number, required: true }, // Current odometer reading
-  capacity:{ type: String, required: true },
+  capacity: { type: String, required: true }, // Vehicle capacity
+  fuelType: { 
+    type: String, 
+    enum: ['ev', 'gas'], // Fuel types: Electric Vehicle (EV) or Gas
+    required: true 
+  },
+  color: { type: String, required: true }, // Color of the vehicle
   status: {
     type: String,
     enum: ['available', 'rented'], // Available statuses
