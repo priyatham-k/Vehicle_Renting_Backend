@@ -206,3 +206,41 @@ exports.getRentalDates = async (req, res) => {
   }
 };
 
+exports.updateRental = async (req, res) => {
+  const rentalId = req.params.rentalId;
+  const { startingOdometer, fuelLevel, pickupTime } = req.body; // New fields
+
+  try {
+    // Find the rental by ID
+    const rental = await Rental.findById(rentalId);
+
+    if (!rental) {
+      return res.status(404).json({ message: "Rental not found" });
+    }
+
+    if (rental.status !== "Waiting For Approval") {
+      return res
+        .status(400)
+        .json({ message: "Only rentals waiting for approval can be updated" });
+    }
+
+    // Update the rental fields
+    rental.startingOdometer = startingOdometer || rental.startingOdometer;
+    rental.fuelLevel = fuelLevel || rental.fuelLevel;
+    rental.pickupTime = pickupTime || rental.pickupTime;
+
+    // Change the status to active
+    rental.status = "active";
+
+    // Save the updated rental
+    await rental.save();
+
+    res.status(200).json({
+      message: "Rental updated successfully with new fields and status changed to active",
+      rental,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update rental", error });
+  }
+};
+

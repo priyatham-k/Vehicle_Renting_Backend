@@ -28,6 +28,10 @@ const rentalSchema = new mongoose.Schema({
     required: true 
   },
   color: { type: String, required: true }, // Color of the vehicle
+  startingOdometer: { type: Number, required: false },
+  fuelLevel: { type: String, enum: ["Full", "Half", "Almost Empty"], required: false },
+  pickupTime: { type: Date, required: false },
+  status: { type: String, enum: ["Waiting For Approval", "active", "Cancelled", "Completed"] },
 });
 
 module.exports = mongoose.model("Rental", rentalSchema);
